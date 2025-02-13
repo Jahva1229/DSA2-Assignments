@@ -1,3 +1,5 @@
+import heapq
+
 # PA1 Skeleton Code
 # DSA2, spring 2025
 
@@ -80,6 +82,8 @@ def read_input():
 	#     route from (x1,y1) to (x2,y2).  The tuples in this list are in the
 	#     order they occur in the input file.
 
+	return (s,m,h,side_road_edges,main_road_edges,highway_edges,side_road_nodes,main_road_nodes,highway_nodes,all_nodes,num_test_cases,test_cases)
+
 # output() function -- given a list of coordinates (as 2-tuples) and the
 # (integer) distance, this function will output the result in the correct
 # format for the auto-grader
@@ -95,25 +99,104 @@ def output(path,dist):
 #YOUR CODE HERE
 def create_adj_list(E, V):
 	adj_list = {}
+
+	# Initialize adjacency list
 	for v in V:
 		adj_list[v] = []
 
+	# Add edges to adjacency list
 	for e in E:
 		v1 = (e[0], e[1])
 		v2 = (e[2], e[3])
 		w = e[4]
+
+		# Check if edge is already in adjacency list
 		if (v2, w) not in adj_list[v1]:
 			adj_list[v1].append((v2, w))
 		if (v1, w) not in adj_list[v2]:
 			adj_list[v2].append((v1, w))
 	
 	return adj_list
+
+def print_adj_list(adj_list):
+	for key in adj_list:
+		edges = " -> ".join([f"{v}({w})" for v, w in adj_list[key]])
+		print(f"{key} -> {edges}")
+
+def dijkstra(adj_list, start, end):
+	dist = {node: float("inf") for node in adj_list}
+	visited = {node: False for node in adj_list}
+	path = {}
+
+	dist[start] = 0
+
+	# Find shortest path
+	while True:
+		# Find the node with the minimum distance
+		min_node = None
+		min_dist = float("inf")
+		for node in adj_list:
+			if not visited[node] and dist[node] < min_dist:
+				min_node = node
+				min_dist = dist[node]
+		if min_node is None:
+			break
+		
+		# mark node as visited
+		visited[min_node] = True
+
+		# Update distances
+		for v, w in adj_list[min_node]:
+			if not visited[v]:
+				new_dist = dist[min_node] + w
+				if new_dist < dist[v]:
+					dist[v] = new_dist
+					path[v] = min_node
+			else:
+				continue
+
+		if min_node == end:
+			break
+
+	if dist[end] == float("inf"):
+		return -1
 	
+	# Reconstruct path
+	path_list = []
+	node = end
+	while node in path:
+		path_list.append(node)
+		node = path[node]
+	path_list.append(start)
+	path_list.reverse()
+
+	return dist[end], path_list
+
+			
+	
+
 
 
 
 def main():
-	read_input()
+	# Read in input
+	(s,m,h,side_road_edges,main_road_edges,highway_edges,side_road_nodes,main_road_nodes,highway_nodes,all_nodes,num_test_cases,test_cases) = read_input()
 	
+	# Create adjacency lists
+	s_adj_list = create_adj_list(side_road_edges, side_road_nodes)
+	m_adj_list = create_adj_list(main_road_edges, main_road_nodes)
+	h_adj_list = create_adj_list(highway_edges, highway_nodes)
+
+	# Print adjacency lists
+	# print_adj_list(s_adj_list)
+	# print_adj_list(m_adj_list)
+	# print_adj_list(h_adj_list)
+
+	# Run Dijkstra's algorithm on each test case
+	print(dijkstra(s_adj_list, (4, 0), (3, 8)))
+
+if __name__ == "__main__":
+	main()
+
 	
 

@@ -1,5 +1,5 @@
 import unittest
-from pa1 import create_adj_list
+from pa1 import create_adj_list, dijkstra
 
 class TestCreateAdjList(unittest.TestCase):
     def test_empty(self):
@@ -35,7 +35,6 @@ class TestCreateAdjList(unittest.TestCase):
             (0, 1): [((0,0), 1)]
         }
         self.assertEqual(create_adj_list(E, V), expected)
-    
 
 
 
