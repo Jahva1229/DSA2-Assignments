@@ -125,54 +125,34 @@ def print_adj_list(adj_list):
 
 def dijkstra(adj_list, start, end):
 	dist = {node: float("inf") for node in adj_list}
-	visited = {node: False for node in adj_list}
-	path = {}
+	done = {node: False for node in adj_list}
+	pred = {node: None for node in adj_list}
 
+	pq = []
+	heapq.heappush(pq, (0, start))
 	dist[start] = 0
 
-	# Find shortest path
-	while True:
-		# Find the node with the minimum distance
-		min_node = None
-		min_dist = float("inf")
-		for node in adj_list:
-			if not visited[node] and dist[node] < min_dist:
-				min_node = node
-				min_dist = dist[node]
-		if min_node is None:
-			break
-		
-		# mark node as visited
-		visited[min_node] = True
+	while pq:
+		current_dist, current = heapq.heappop(pq)
 
-		# Update distances
-		for v, w in adj_list[min_node]:
-			if not visited[v]:
-				new_dist = dist[min_node] + w
-				if new_dist < dist[v]:
-					dist[v] = new_dist
-					path[v] = min_node
-			else:
-				continue
+		if done[current]:
+			continue
+		done[current] = True
 
-		if min_node == end:
-			break
+		for v, w in adj_list[current]:
+			new_dist = dist[current] + w
+			if new_dist < dist[v]:
+				dist[v] = new_dist
+				pred[v] = current
+				heapq.heappush(pq, (new_dist, v))
 
-	if dist[end] == float("inf"):
-		return -1
-	
-	# Reconstruct path
-	path_list = []
-	node = end
-	while node in path:
-		path_list.append(node)
-		node = path[node]
-	path_list.append(start)
-	path_list.reverse()
+	path = []
+	current = end
+	while current:
+		path.append(current)
+		current = pred[current]
+	return dist[end], len(path), path[::-1]
 
-	return dist[end], path_list
-
-			
 	
 
 
