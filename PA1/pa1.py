@@ -153,27 +153,168 @@ def dijkstra(adj_list, start, end):
 		current = pred[current]
 	return dist[end], len(path), path[::-1]
 
+def modded_dijkstra(a, s, m, h, start, end):
+
+	#PHASE 1
+	dist = {node: float("inf") for node in s}
+	done = {node: False for node in s}
+	pred = {node: None for node in s}
+
+	pq = []
+	heapq.heappush(pq, (0, start))
+	dist[start] = 0
+
+	while pq:
+		current_dist, current = heapq.heappop(pq)
+
+		if done[current]:
+			continue
+		done[current] = True
+
+		for v, w in s[current]:
+			new_dist = dist[current] + w
+			if new_dist < dist[v]:
+				dist[v] = new_dist
+				pred[v] = current
+				heapq.heappush(pq, (new_dist, v))
+		
+		if current in m.keys():
+			dist_1, len_1, path_1 = dijkstra(s, start, current)
+			start = current
+			break
+
+	# print("Main Road found from start!")
+	# print(dist_1, len_1, path_1)
+
+	#PHASE 2
+	dist = {node: float("inf") for node in m}
+	done = {node: False for node in m}
+	pred = {node: None for node in m}
+
+	pq = []
+	heapq.heappush(pq, (0, start))
+	dist[start] = 0
+
+	while pq:
+		current_dist, current = heapq.heappop(pq)
+
+		if done[current]:
+			continue
+		done[current] = True
+
+		for v, w in m[current]:
+			new_dist = dist[current] + w
+			if new_dist < dist[v]:
+				dist[v] = new_dist
+				pred[v] = current
+				heapq.heappush(pq, (new_dist, v))
+		
+		if current in h.keys():
+			dist_2, len_2, path_2 = dijkstra(m, start, current)
+			start = current
+			break
+
+	# print("Highway found from start!")
+	# print(dist_2,len_2, path_2)
+
+	#PHASE 3
+	dist = {node: float("inf") for node in s}
+	done = {node: False for node in s}
+	pred = {node: None for node in s}
+
+	pq = []
+	heapq.heappush(pq, (0, end))
+	dist[end] = 0
+
+	while pq:
+		current_dist, current = heapq.heappop(pq)
+
+		if done[current]:
+			continue
+		done[current] = True
+
+		for v, w in s[current]:
+			new_dist = dist[current] + w
+			if new_dist < dist[v]:
+				dist[v] = new_dist
+				pred[v] = current
+				heapq.heappush(pq, (new_dist, v))
+		
+		if current in m.keys():
+			dist_5, len_5, path_5 = dijkstra(s, end, current)
+			path_5.reverse()
+			end = current
+			break
 	
+	# print("Main road found from end!")
+	# print(dist_5, len_5, path_5)
+	
+	#PHASE 4
+	dist = {node: float("inf") for node in m}
+	done = {node: False for node in m}
+	pred = {node: None for node in m}
 
+	pq = []
+	heapq.heappush(pq, (0, end))
+	dist[end] = 0
 
+	while pq:
+		current_dist, current = heapq.heappop(pq)
 
+		if done[current]:
+			continue
+		done[current] = True
+
+		for v, w in m[current]:
+			new_dist = dist[current] + w
+			if new_dist < dist[v]:
+				dist[v] = new_dist
+				pred[v] = current
+				heapq.heappush(pq, (new_dist, v))
+		
+		if current in h.keys():
+			dist_4, len_4, path_4 = dijkstra(m, end, current)
+			path_4.reverse()
+			end = current
+			break
+
+	# print("Highway found from end!")
+	# print(dist_4, len_4, path_4)
+
+	#PHASE 5
+	dist_3, len_3, path_3 = dijkstra(h, path_2[-1], path_4[0])
+	# print("Connected Highways!")
+	# print(dist_3, len_3, path_5)
+
+	temp = path_1 + path_2 + path_3 + path_4 + path_5
+	path = []
+	[path.append(val) for val in temp if val not in path]
+
+	tdist = dist_1 + dist_2 + dist_3 + dist_4 + dist_5
+	tlen = len_1 + len_2 + len_3 + len_4 + len_5
+	return tdist, tlen, path
 
 def main():
 	# Read in input
-	(s,m,h,side_road_edges,main_road_edges,highway_edges,side_road_nodes,main_road_nodes,highway_nodes,all_nodes,num_test_cases,test_cases) = read_input()
-	
+	(s, m, h, side_road_edges, main_road_edges, highway_edges, 
+		side_road_nodes, main_road_nodes, highway_nodes, all_nodes, 
+		num_test_cases, test_cases) = read_input()
+
 	# Create adjacency lists
+	adj_list = create_adj_list(side_road_edges + main_road_edges + highway_edges, all_nodes)
 	s_adj_list = create_adj_list(side_road_edges, side_road_nodes)
 	m_adj_list = create_adj_list(main_road_edges, main_road_nodes)
 	h_adj_list = create_adj_list(highway_edges, highway_nodes)
 
-	# Print adjacency lists
-	# print_adj_list(s_adj_list)
-	# print_adj_list(m_adj_list)
-	# print_adj_list(h_adj_list)
-
-	# Run Dijkstra's algorithm on each test case
-	print(dijkstra(s_adj_list, (4, 0), (3, 8)))
+	# Process each test case
+	for (x1, y1, x2, y2) in test_cases:
+		start = (x1, y1)
+		end = (x2, y2)
+		if start in all_nodes and end in all_nodes:
+			dist, length, path = modded_dijkstra(adj_list, s_adj_list, m_adj_list, h_adj_list, start, end)
+			output(path, dist)
+		else:
+			print(-1)  # If start or end node is not in the graph
 
 if __name__ == "__main__":
 	main()
