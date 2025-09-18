@@ -6,7 +6,6 @@
 # input properly.
 
 # How many input cases are there?
-solution = []
 n = int(input())
 
 for _ in range(n):
@@ -45,11 +44,15 @@ for _ in range(n):
 		if name not in vertex_map:
 			vertex_map[name] = Vertex(name)
 		return vertex_map[name]
+	
+	def get_vertex_by_name(G, name):
+		for u in G:
+			if u.name == name:
+				return u
+		return None
 
 	def make_adj_list(edges):
 		global G, vertex_map
-		G = {}
-		vertex_map = {}
 
 		# build the graph as an adjacency list
 		for (u,v) in edges:
@@ -89,12 +92,6 @@ for _ in range(n):
 	def print_dfs(G):
 		for u in G:
 			print(f"Vertex: {u.name}, d: {u.d}, f: {u.f}, pi: {u.pi.name if u.pi else None}")
-
-	def get_vertex_by_name(G, name):
-		for u in G:
-			if u.name == name:
-				return u
-		return None
 
 	def classify_edge(u, v, wt, wf, wb, wc):
 		if u.d == float('inf') or v.d == float('inf') or u.f == float('inf') or v.f == float('inf'):
